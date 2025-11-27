@@ -33,12 +33,21 @@ export async function GET(request: NextRequest) {
       .toArray();
 
     // Format for frontend
-    const leaderboard = scores.map((score, index) => ({
-      rank: index + 1,
-      user: `${score.userAddress.slice(0, 4)}…${score.userAddress.slice(-4)}`,
-      score: score.score,
-      timestamp: score.submittedAt,
-    }));
+    const leaderboard = scores.map((score, index) => {
+      const submittedAt = new Date(score.submittedAt);
+      const now = new Date();
+      const diffMs = now.getTime() - submittedAt.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const timeAgo = diffMins < 1 ? "Just now" : diffMins === 1 ? "1 min ago" : `${diffMins} min ago`;
+      
+      return {
+        rank: index + 1,
+        user: `${score.userAddress.slice(0, 4)}…${score.userAddress.slice(-4)}`,
+        score: score.score,
+        time: timeAgo,
+        timestamp: score.submittedAt,
+      };
+    });
 
     return NextResponse.json({ leaderboard, scope }, { status: 200 });
   } catch (error) {

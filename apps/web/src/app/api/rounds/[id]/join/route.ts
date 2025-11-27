@@ -72,7 +72,6 @@ export async function POST(
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error('Validation error:', error.errors);
-      console.error('Received body:', body);
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
         { status: 400 }

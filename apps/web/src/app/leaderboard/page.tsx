@@ -13,6 +13,7 @@ type LeaderboardEntry = {
   rank: number;
   user: string;
   score: number;
+  time?: string;
   timestamp: string;
 };
 

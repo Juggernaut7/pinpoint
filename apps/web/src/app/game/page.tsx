@@ -5,9 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAccount } from "wagmi";
-import { signMessage } from "@wagmi/core";
-import { wagmiConfig } from "@/components/wallet-provider";
+import { useAccount, useSignMessage } from "wagmi";
 
 const TAP_TARGET = 5;
 const BEST_KEY = "pinpoint_practice_best";
@@ -19,6 +17,7 @@ export default function PlayPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { address, isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
   const roundId = searchParams.get("roundId");
   const mode = searchParams.get("mode") || "practice"; // "practice" or "reward"
   
@@ -63,7 +62,7 @@ export default function PlayPage() {
 
   const handleTap = () => {
     // Prevent tapping if not ready or if waiting/submitting
-    if (status !== "ready" || startTime === null || status === "waiting" || status === "submitting") return;
+    if (status !== "ready" || startTime === null) return;
     
     const reaction = Math.round(performance.now() - startTime);
     const nextTimes = [...times, reaction];
@@ -106,10 +105,7 @@ export default function PlayPage() {
       let signature = "";
       
       try {
-        signature = await signMessage(wagmiConfig, {
-          message,
-          account: address as `0x${string}`,
-        });
+        signature = await signMessageAsync({ message });
       } catch (sigError) {
         console.warn("Signature failed, using placeholder:", sigError);
         // Use placeholder signature if signing fails
@@ -209,8 +205,6 @@ export default function PlayPage() {
             <div className="mt-3">
               {submitted ? (
                 <p className="text-sm text-green-600 font-medium">✓ Score submitted to leaderboard!</p>
-              ) : status === "submitting" ? (
-                <p className="text-sm text-muted-foreground">Submitting...</p>
               ) : submitError ? (
                 <div className="space-y-2">
                   <p className="text-sm text-destructive">{submitError}</p>
