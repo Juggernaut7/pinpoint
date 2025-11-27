@@ -275,7 +275,7 @@ export default function RewardPage() {
       <div className="flex flex-col gap-3">
         <Button 
           size="lg" 
-          className="flex-1" 
+          className="w-full" 
           onClick={handleJoinRound}
           disabled={!isConnected || loading || isSending || isConfirming || paymentStep !== "idle"}
         >
