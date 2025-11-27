@@ -31,7 +31,7 @@ export function UserBalance() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto mb-8">
+    <Card className="w-full max-w-md mx-auto mb-8 sm:max-w-lg md:max-w-xl lg:max-w-2xl">
       <CardHeader>
         <CardTitle className="text-lg font-medium">Connected Wallet</CardTitle>
         <p className="text-sm text-muted-foreground truncate pt-1">{address}</p>

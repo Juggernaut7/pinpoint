@@ -1,66 +1,118 @@
 "use client";
 
-import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { WagmiProvider, createConfig, http, useConnect } from "wagmi";
-import { celo, celoAlfajores } from "wagmi/chains";
-import { ConnectButton } from "./connect-button";
+import { WagmiProvider, useConnect, useConfig } from "wagmi";
+import { celo, celoAlfajores, celoSepolia } from "wagmi/chains";
 
-const connectors = connectorsForWallets(
-  [
-    {
-      groupName: "Recommended",
-      wallets: [injectedWallet],
-    },
-  ],
-  {
-    appName: "pinpoint",
-    projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID!,
-  }
-);
+const chains = [celo, celoAlfajores, celoSepolia] as const;
+const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID || "";
 
-const wagmiConfig = createConfig({
-  chains: [celo, celoAlfajores],
-  connectors,
-  transports: {
-    [celo.id]: http(),
-    [celoAlfajores.id]: http(),
-  },
+if (!projectId) {
+  console.warn("NEXT_PUBLIC_WC_PROJECT_ID is not set. WalletConnect may not work.");
+}
+
+// Create config outside component to avoid re-creation
+export const wagmiConfig = getDefaultConfig({
+  appName: "pinpoint",
+  projectId: projectId || "placeholder",
+  chains: chains as any,
   ssr: true,
 });
 
-const queryClient = new QueryClient();
+// Create QueryClient with singleton pattern
+let browserQueryClient: QueryClient | undefined = undefined;
+
+function getQueryClient() {
+  if (typeof window === "undefined") {
+    // Server: always make a new query client
+    return new QueryClient({
+      defaultOptions: {
+        queries: {
+          refetchOnWindowFocus: false,
+        },
+      },
+    });
+  }
+  // Browser: use singleton pattern to keep the same query client
+  if (!browserQueryClient) {
+    browserQueryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          refetchOnWindowFocus: false,
+        },
+      },
+    });
+  }
+  return browserQueryClient;
+}
 
 function WalletProviderInner({ children }: { children: React.ReactNode }) {
   const { connect, connectors } = useConnect();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     // Check if the app is running inside MiniPay
-    if (window.ethereum && window.ethereum.isMiniPay) {
+    if (typeof window !== "undefined" && window.ethereum?.isMiniPay) {
       // Find the injected connector, which is what MiniPay uses
       const injectedConnector = connectors.find((c) => c.id === "injected");
       if (injectedConnector) {
         connect({ connector: injectedConnector });
       }
     }
-  }, [connect, connectors]);
+  }, [connect, connectors, mounted]);
 
   return <>{children}</>;
 }
 
+// Component to ensure WagmiProvider is ready before RainbowKitProvider
+function RainbowKitWrapper({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    // Use requestAnimationFrame to ensure WagmiProvider context is fully initialized
+    // This runs after the current render cycle completes
+    const frame = requestAnimationFrame(() => {
+      setReady(true);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  if (!ready) {
+    return <>{children}</>;
+  }
+
+  return <RainbowKitProvider>{children}</RainbowKitProvider>;
+}
+
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const queryClient = getQueryClient();
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Render providers immediately - they handle SSR
+  // The dynamic import in layout ensures this only runs on client
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
-          <WalletProviderInner>{children}</WalletProviderInner>
-        </RainbowKitProvider>
+        {mounted ? (
+          <RainbowKitWrapper>
+            <WalletProviderInner>{children}</WalletProviderInner>
+          </RainbowKitWrapper>
+        ) : (
+          <>{children}</>
+        )}
       </QueryClientProvider>
     </WagmiProvider>
   );

@@ -25,8 +25,13 @@ const config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#07955F",
+          DEFAULT: "#00A8E8", // MiniPay blue
           foreground: "#FFFFFF",
+        },
+        minipay: {
+          blue: "#00A8E8",
+          "blue-dark": "#0094D4",
+          "blue-darker": "#0079BF",
         },
         secondary: {
           DEFAULT: "#2A2C34",

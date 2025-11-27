@@ -1,0 +1,32 @@
+# Celo & Wallet Configuration
+NEXT_PUBLIC_WC_PROJECT_ID=1234567890abcdef1234567890abcdef
+NEXT_PUBLIC_APP_NAME=pinpoint
+
+# MongoDB Configuration
+MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/pinpoint?retryWrites=true&w=majority
+
+# MiniPay & Payout Configuration
+MINIPAY_ISSUER_PRIVATE_KEY=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+MINIPAY_ISSUER_ADDRESS=0x1234567890123456789012345678901234567890
+NEXT_PUBLIC_MINIPAY_ISSUER_ADDRESS=0x1234567890123456789012345678901234567890
+
+# Celo RPC URLs
+CELO_RPC_URL=https://forno.celo.org
+CELO_ALFAJORES_RPC_URL=https://alfajores-forno.celo-testnet.org
+CELO_SEPOLIA_RPC_URL=https://forno.celo-sepolia.celo-testnet.org
+
+# Custom cUSD Token Address (Optional - for testing with mock tokens)
+# If not set, uses default cUSD addresses for each network
+# NEXT_PUBLIC_CUSD_ADDRESS=0x6c23508A9b310C5f2eb2e2eFeBeB748067478667
+
+# Game Configuration
+ENTRY_FEE=0.01
+HOUSE_FEE_PERCENT=5
+TOP_WINNERS_COUNT=10
+
+# IPFS/Web3.Storage (Optional)
+WEB3_STORAGE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVmIiwiaXNzIjoiaHR0cHM6Ly9hcGkud2ViMy5zdG9yYWdlLm9yZyIsImV4cCI6OTk5OTk5OTk5OX0.dummy_token_replace_with_real
+
+# Environment
+NODE_ENV=development
+
