@@ -55,7 +55,12 @@ export default function LeaderboardPage() {
         setRows(formatted);
       } catch (err) {
         console.error("Error fetching leaderboard:", err);
-        setError("Failed to load leaderboard. Make sure MongoDB is connected.");
+        const errorData = err instanceof Error ? err.message : "Unknown error";
+        setError(
+          errorData.includes("MongoDB") || errorData.includes("MONGODB_URI")
+            ? "MongoDB not configured. Add MONGODB_URI in Vercel environment variables. See VERCEL_SETUP.md"
+            : "Failed to load leaderboard. Check VERCEL_SETUP.md for setup instructions."
+        );
         // Fallback to empty array
         setRows([]);
       } finally {

@@ -52,8 +52,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ leaderboard, scope }, { status: 200 });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Provide helpful error messages
+    let userMessage = 'Failed to fetch leaderboard';
+    if (errorMessage.includes('Mongo URI') || errorMessage.includes('MONGODB_URI')) {
+      userMessage = 'MongoDB not configured. Please set MONGODB_URI in Vercel environment variables.';
+    } else if (errorMessage.includes('ENOTFOUND') || errorMessage.includes('ETIMEOUT')) {
+      userMessage = 'MongoDB connection failed. Check MongoDB Atlas IP whitelist and cluster status.';
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch leaderboard' },
+      { 
+        error: userMessage,
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
       { status: 500 }
     );
   }
